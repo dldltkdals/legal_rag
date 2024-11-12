@@ -61,8 +61,9 @@ LLM 학습 및 RAG 시스템 검증에 필요한 법률 QA 데이터셋을 구�
 ## 실험 결과
 
 ### 검색성능
+
 <p align="center">
-  <img width="405" alt="스크린샷 2024-11-13 오전 1 35 36" src="https://github.com/user-attachments/assets/09dd94c3-68d9-
+ <img width="410" alt="검색 성능" src="https://github.com/user-attachments/assets/5be751f6-4ed8-4689-a8be-1ace9e2ca517">
 </p>
 검색성능을 평가하기 위해 mAP(Mean Average Precision)를 사용하여 모델의 전체적인 검색 정확도를 측정했다. mAP는 정확도와 순위를 종합적으로 고려하는 지표로, 높은 값일수록 검색 결과의 질이 우수함을 의미한다.흥미롭게도, BM25 기반의 검색 방식이 Dense Retrieval 방식보다 월등히 높은 mAP 값을 기록했다. 이는 법률 데이터의 특성 상, 일반적인 언어 모델 기반의 Dense Retrieval 방식보다 전통적인 정보 검색 기법인 BM25가 더 적합하기 때문으로 판단된다. 법률 용어는 일반적인 단어에 비해 동의어가 적고 구체적인 의미를 지니는 경우가 많아, BM25와 같이 키워드 일치에 기반한 검색 방식이 법률 데이터의 특성을 더 잘 반영한 것으로 보인다.
 
@@ -70,7 +71,8 @@ LLM 학습 및 RAG 시스템 검증에 필요한 법률 QA 데이터셋을 구�
 <p align="center">
   <img width="609" alt="생성 성능" src="https://github.com/user-attachments/assets/93ceb7a8-b9f9-446c-aff0-b8aaabea4bf5">
 </p>
-Bert 모델을 활용해 실제 답변과 생성된 답변간의 의미적 유사성을 평가하는 BERT score 기준으로 볼 때, Advanced RAG 기법을 적용한 모델들이 법률 도메인에 파인튜닝된 모델보다 더 높은 점수를 얻어 RAG 기법이 적용된 모델이 생성한 답변이 더 높은 유사성을 갖는 것을 확인했다.![image](https://github.com/user-attachments/assets/efa893d0-7a22-4f16-ab32-6edc364983d7)
+
+Bert 모델을 활용해 실제 답변과 생성된 답변간의 의미적 유사성을 평가하는 BERT score 기준으로 볼 때, Advanced RAG 기법을 적용한 모델들이 법률 도메인에 파인튜닝된 모델보다 더 높은 점수를 얻어 RAG 기법이 적용된 모델이 생성한 답변이 더 높은 유사성을 갖는 것을 확인했다.
 
 
 ###  검색된 문서의 효과
@@ -78,7 +80,7 @@ Bert 모델을 활용해 실제 답변과 생성된 답변간의 의미적 유�
 RAG 기법에 제공되는 검색된 문서의 개수가  답변 생성에 미치는 영향을 분석하기 위해  검색된 판례의 수를 증가시켜가며  bleu-1, bert score를 평가했다.
 <p align="center">
   <img width="723" alt="스크린샷 2024-11-13 오전 1 26 34" src="https://github.com/user-attachments/assets/7ba9ce5a-a13b-4d26-9192-ed7ec1ee5f9d">
-  410e-a79b-fd17213a2400">
+ 
 </p>
 실험 결과 검색된 문서의 수가 증가할수록 모든 기법에서 BLEU-1 점수는 지속적으로 상승하는 경향을 보였다**.** 이는 BLEU-1 점수가 생성 문장과 참조 문장 간의 n-gram 일치율을 측정하는 지표이므로, 검색된 문서의 양이 증가할수록 생성 모델이 참조할 수 있는 단어 조합이 많아져 생성 문장의 다양성이 증가하기 때문이다.
 
