@@ -1,3 +1,4 @@
 *.csv
 *pickle
 .DS_Store
+README.md
