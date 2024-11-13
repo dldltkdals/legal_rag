@@ -1,17 +1,10 @@
-from peft import PeftModel, PeftConfig
-from transformers import (
-    AutoModelForCausalLM,
-    AutoTokenizer)
-import torch
-import os, sys
-from datasets import load_dataset, Dataset
+import os
+from datasets import  Dataset
 from tqdm import tqdm
 import pandas as pd
 import csv
 from argparse import ArgumentParser
-from rag import RetrievalQA
-from retriever import Retriever, BM25_Retriever, Reranker_Retriever
-import hyde
+
 
 def parse_args():
     parser = ArgumentParser()
@@ -47,12 +40,6 @@ def inference(QA,config):
 
 
 
-if __name__ == "__main__":
-    config = parse_args()
-    QA = RetrievalQA(model_name=config["model_name"],retriever=Reranker_Retriever(),num_docs=config["top_k"])
-    if not os.path.exists("output"):
-        print("create new folder")
-        os.mkdir("output")
-    inference(QA,config)
+
 
     

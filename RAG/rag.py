@@ -1,15 +1,12 @@
-from peft import PeftModel, PeftConfig
 from transformers import (
     AutoModelForCausalLM,
     AutoTokenizer)
 import torch
-import os, sys
-from datasets import load_dataset, Dataset
+from rerank.reranker import Reranker
+
 from tqdm import tqdm
-import pandas as pd
-import csv
 from openai import OpenAI
-from retriever import Retriever, BM25_Retriever, Reranker_Retriever
+from retriever import Retriever, BM25_Retriever
 
 SYS_PROMPT = '''You are a helpful AI assistant for legal tips. Please answer the user's questions kindly with their questions on cases.
     당신은 유능한 법률 AI 어시스턴트 입니다.사용자의 질문에 답하려면 질문과 함께 제공되는 판례를 참고 하여 답해주세요.
@@ -37,47 +34,28 @@ def load_model(base_model):
             )
     return model, tokenizer
 
-def post_retriever():
-    model="gpt-3.5-turbo"
-    api_key = ""
-    client = OpenAI(api_key = api_key )
-    return client
 
 class RetrievalQA:
-    def __init__(self,model_name,retriever,num_docs=2,post_retrieving = False):
+    def __init__(self,model_name,retriever,top_k=3):
         self.model,self.tokenizer = load_model(model_name)
         self.retriever = retriever
-        self.retriever.set_k(num_docs)
-        self.post_retrieving_flag = post_retrieving
-        
-    def post_retrieving(self,instruction,retrieved_docs):
-        client = post_retriever()
-        model = "gpt-3.5-turbo"
-        for doc in retrieved_docs:
-            case_ = doc["context"]
-            messages=[
-                {"role": "system", "content": "당신은 법률 판례를 요약하는 ai입니다. 질문에 답할 수 있도록 검색된 판례를 압축해주세요."},
-                {
-                    "role": "user",
-                    "content": f"검색된 판례들을 주어진 질문에 답을 할 수 있도록 필수적인 정보만 남겨서 두 문장으로 압축해줘.\n 질문:{instruction} \n검색된 판례:{case_}\n 압축된 판례: "
-                }
-            ]
-            completion = client.chat.completions.create(model = model,messages=messages)
-            doc["context"] = completion.choices[0].message.content
+        self.top_k = top_k
             
     def format_prompt(self,instruction):
         prompt = f"질문: \n{instruction}\n\n"
         
         prompt += "판례 요약: \n"
-        retrieved_docs = self.retriever.search(instruction)
+        if isinstance(self.retriever, Reranker):
+            retrieved_docs = self.retriever.search(instruction)
+        else:
+            retrieved_docs = self.retriever.search(instruction,self.top_k)
+            
        
-        if self.post_retrieving_flag == True:
-            self.post_retrieving(instruction,retrieved_docs)
-        print(retrieved_docs)
+    
         for doc in retrieved_docs:
-            prompt += doc["case_title"]
+            prompt += doc.metadata["case_title"]
             prompt += ": "
-            prompt += doc["context"]
+            prompt += doc.metadata["summary"]
             prompt += "\n\n"
         return prompt
     
@@ -106,8 +84,3 @@ class RetrievalQA:
                 repetition_penalty = 1.02,
         )
         return self.tokenizer.decode(outputs[0], skip_special_tokens=True).split("assistant\n\n")[-1]
-
-if __name__ == "__main__":
-    QA = RetrievalQA('MLP-KTLim/llama-3-Korean-Bllossom-8B',Retriever(),num_docs=2,post_retrieving = True)
-    output = QA.generate("배우자가 제게 폭행을 했는데 이를 귀책사유로 이혼 할 수 있나요?")
-    print(output)
